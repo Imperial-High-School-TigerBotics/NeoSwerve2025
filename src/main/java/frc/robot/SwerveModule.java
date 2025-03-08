@@ -1,6 +1,7 @@
 package frc.robot;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -8,6 +9,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -15,23 +17,21 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  *  - Reads the absolute steering angle from a CANCoder
  *  - Controls that angle with a PID loop (output -> angleMotor.set())
  *  - Drives the wheel in open-loop (fraction of maxSpeed)
- *  - No integrated encoders, no distance measurement
+ *  - Also provides odometry data: distance traveled + steering angle
  */
 public class SwerveModule {
     public final int moduleNumber;
 
-    // The two motors
     private final SparkMax driveMotor;
     private final SparkMax angleMotor;
-
-    // The CANCoder for absolute steering angle
     private final CANcoder angleCANCoder;
 
-    // Mechanical offset
     private final Rotation2d angleOffset;
-
-    // Angle PID (if you want closed-loop turning)
     private final PIDController anglePID;
+
+    // If your SparkMax class can give us position in rotations:
+    // (If not, adapt accordingly to read from an alternate encoder.)
+    private final RelativeEncoder driveEncoder;
 
     public SwerveModule(int moduleNumber) {
         this.moduleNumber = moduleNumber;
@@ -80,6 +80,13 @@ public class SwerveModule {
         // Create the CANCoder
         angleCANCoder = new CANcoder(canCoderID);
 
+        // Get the drive encoder from the SparkMax
+        // (Adjust as needed based on your actual SparkMax library methods.)
+        driveEncoder = driveMotor.getEncoder();
+
+        // Optionally, you could set position conversion factors if your library supports it:
+        // driveEncoder.setPositionConversionFactor(Constants.Swerve.drivePositionFactor);
+        // driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveVelocityFactor);
 
         // Create the angle PID
         anglePID = new PIDController(
@@ -87,12 +94,11 @@ public class SwerveModule {
             Constants.Swerve.angleKI,
             Constants.Swerve.angleKD
         );
-        // optional if you want -180..180 wrap
         anglePID.enableContinuousInput(-180, 180);
     }
 
     /**
-     * The only data we keep is the angle from the CANCoder and the open-loop drive speed.
+     * The only data we keep is the angle from the CANCoder and open-loop drive speed.
      * - We'll do WPILib "optimize" so we pick the shortest turning direction.
      */
     public void setDesiredState(SwerveModuleState desiredState) {
@@ -109,33 +115,36 @@ public class SwerveModule {
         double angleOutput = anglePID.calculate(currentAngle, optimized.angle.getDegrees());
 
         // 4) Open-loop drive: fraction of max speed
-        //    If desired speed is e.g. 2 m/s and maxSpeed = 4 m/s, we do 2/4 => 0.5
         double speedFraction = optimized.speedMetersPerSecond / Constants.Swerve.maxSpeed;
 
         // 5) Command the motors
         angleMotor.set(angleOutput);
         driveMotor.set(speedFraction);
 
-        // 6) Dashboard
+        // 6) Dashboard (debug)
         SmartDashboard.putNumber("Module " + moduleNumber + " Current Angle", currentAngle);
         SmartDashboard.putNumber("Module " + moduleNumber + " Desired Angle", optimized.angle.getDegrees());
         SmartDashboard.putNumber("Module " + moduleNumber + " Speed Fraction", speedFraction);
     }
 
     /**
-     * We'll just define "current angle" as:
-     *   canCoder - angleOffset
+     * Return the distance traveled by this module's drive wheel, in meters.
      */
-    private double getCurrentAngleDegrees() {
-        double rawAbsAngle = angleCANCoder.getPosition().getValueAsDouble(); // [0..360)
-        double adjusted     = rawAbsAngle - angleOffset.getDegrees();
-        // Optionally wrap into [-180..180] or just leave it
-        return wrapAngleDeg(adjusted);
+    public double getDriveDistanceMeters() {
+        // If your SparkMax encoder position is in 'motor rotations':
+        double motorRotations = driveEncoder.getPosition();
+        return motorRotations * Constants.Swerve.drivePositionFactor;
     }
 
     /**
-     * If you want to wrap angles from any range into [-180..180]
+     * Returns the current steering angle (post-offset), in degrees from -180..180.
      */
+    private double getCurrentAngleDegrees() {
+        double rawAbsAngle = angleCANCoder.getPosition().getValueAsDouble(); // [0..360)
+        double adjusted = rawAbsAngle - angleOffset.getDegrees();
+        return wrapAngleDeg(adjusted);
+    }
+
     private double wrapAngleDeg(double deg) {
         double wrapped = deg % 360.0;
         if (wrapped > 180.0) {
@@ -144,6 +153,17 @@ public class SwerveModule {
             wrapped += 360.0;
         }
         return wrapped;
+    }
+
+    /**
+     * For WPILib odometry, we need a SwerveModulePosition: distance + module angle.
+     */
+    public SwerveModulePosition getModulePosition() {
+        // "angle" must match the same reference used in setDesiredState (i.e. current angle)
+        return new SwerveModulePosition(
+            getDriveDistanceMeters(),
+            Rotation2d.fromDegrees(getCurrentAngleDegrees())
+        );
     }
 
     /**

@@ -29,6 +29,16 @@ public final class Constants {
         public static final double angleKI = 0.0;
         public static final double angleKD = 0.0;
 
+        // Example wheel and gear ratio constants for the drive encoder
+        // *** Replace these with your actual sizes/ratios! ***
+        public static final double wheelDiameterMeters   = 0.1016;  // 4-inch diameter (0.1016 m)
+        public static final double wheelCircumference    = wheelDiameterMeters * Math.PI;
+        public static final double driveGearRatio        = 6.75;    // Example ratio
+        /** Meters of wheel travel per 1 motor rotation: */
+        public static final double drivePositionFactor   = (1.0 / driveGearRatio) * wheelCircumference;
+        /** If encoder reports RPM, then multiply by drivePositionFactor/60 to get m/s: */
+        public static final double driveVelocityFactor   = drivePositionFactor / 60.0;
+
         // Module IDs + Offsets
         public static final class Mod0 { // Front Left
             public static final int driveMotorID = 1;
