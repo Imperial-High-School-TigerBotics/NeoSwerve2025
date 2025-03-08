@@ -112,6 +112,12 @@ public class Swerve extends SubsystemBase {
         // Log to SmartDashboard
         SmartDashboard.putNumber("Gyro Yaw", gyro.getYaw());
         SmartDashboard.putString("Odometry Pose", swerveOdometry.getPoseMeters().toString());
+
+        for (int i = 0; i < mSwerveMods.length; i++) {
+            double canCoderAngle = mSwerveMods[i].getCanCoderAngle();
+            SmartDashboard.putNumber("Module " + i + " CANCoder Angle", canCoderAngle);
+            System.out.println("Module " + i + " CANCoder Angle: " + canCoderAngle);
+        }
     }
 
     /**
