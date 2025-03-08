@@ -33,7 +33,7 @@ public final class Constants {
         // *** Replace these with your actual sizes/ratios! ***
         public static final double wheelDiameterMeters   = 0.1016;  // 4-inch diameter (0.1016 m)
         public static final double wheelCircumference    = wheelDiameterMeters * Math.PI;
-        public static final double driveGearRatio        = 6.75;    // Example ratio
+        public static final double driveGearRatio        = 6.75;    // L1: 8.14 L2: 6.75 L3: 6.12
         /** Meters of wheel travel per 1 motor rotation: */
         public static final double drivePositionFactor   = (1.0 / driveGearRatio) * wheelCircumference;
         /** If encoder reports RPM, then multiply by drivePositionFactor/60 to get m/s: */
