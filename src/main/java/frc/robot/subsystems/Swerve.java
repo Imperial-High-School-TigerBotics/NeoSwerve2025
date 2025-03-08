@@ -84,14 +84,22 @@ public class Swerve extends SubsystemBase {
     public Rotation2d getGyroYaw() {
         return Rotation2d.fromDegrees(-gyro.getYaw()); // Negate to match WPILib convention
     }
-
+    
     public void zeroHeading() {
         gyro.reset();
+        swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(), new Pose2d(getPose().getTranslation(), new Rotation2d()));
+    }
+    
+    public void logCanCoderOffsets() {
+        for (SwerveModule mod : mSwerveMods) {
+            SmartDashboard.putNumber("Module " + mod.moduleNumber + " CANcoder Offset", mod.getCanCoderAngle().getDegrees());
+        }
     }
 
     @Override
     public void periodic() {
         swerveOdometry.update(getGyroYaw(), getModulePositions());
         SmartDashboard.putNumber("Gyro Yaw", gyro.getYaw());
+        logCanCoderOffsets();
     }
 }
