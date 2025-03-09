@@ -1,141 +1,75 @@
 package frc.robot.subsystems;
 
-import frc.robot.SwerveModule;
 import frc.robot.Constants;
+import frc.robot.SwerveModule;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Swerve extends SubsystemBase {
-    private final SwerveModule[] mSwerveMods;
-    private final AHRS gyro;
+    private final SwerveModule frontLeft = new SwerveModule(
+        Constants.Swerve.Mod0.driveMotorID,
+        Constants.Swerve.Mod0.angleMotorID,
+        Constants.Swerve.Mod0.canCoderID,
+        Constants.Swerve.Mod0.angleOffset
+    );
 
-    // WPILib swerve odometry
-    private final SwerveDriveOdometry swerveOdometry;
+    private final SwerveModule frontRight = new SwerveModule(
+        Constants.Swerve.Mod1.driveMotorID,
+        Constants.Swerve.Mod1.angleMotorID,
+        Constants.Swerve.Mod1.canCoderID,
+        Constants.Swerve.Mod1.angleOffset
+    );
+
+    private final SwerveModule backLeft = new SwerveModule(
+        Constants.Swerve.Mod2.driveMotorID,
+        Constants.Swerve.Mod2.angleMotorID,
+        Constants.Swerve.Mod2.canCoderID,
+        Constants.Swerve.Mod2.angleOffset
+    );
+
+    private final SwerveModule backRight = new SwerveModule(
+        Constants.Swerve.Mod3.driveMotorID,
+        Constants.Swerve.Mod3.angleMotorID,
+        Constants.Swerve.Mod3.canCoderID,
+        Constants.Swerve.Mod3.angleOffset
+    );
+
+    private AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
 
     public Swerve() {
-        gyro = new AHRS(NavXComType.kMXP_SPI);
-        gyro.reset();
 
-        mSwerveMods = new SwerveModule[] {
-            new SwerveModule(0),
-            new SwerveModule(1),
-            new SwerveModule(2),
-            new SwerveModule(3)
-        };
-
-        // Build an array of the modules' initial positions (likely all zeros at startup).
-        SwerveModulePosition[] initialPositions = new SwerveModulePosition[] {
-            mSwerveMods[0].getModulePosition(),
-            mSwerveMods[1].getModulePosition(),
-            mSwerveMods[2].getModulePosition(),
-            mSwerveMods[3].getModulePosition()
-        };
-
-        // Create the odometry object
-        swerveOdometry = new SwerveDriveOdometry(
-            Constants.Swerve.swerveKinematics,
-            getGyroYaw(),
-            initialPositions
-        );
     }
 
-    /**
-     * Main drive method.
-     * @param translation X/Y speeds in m/s
-     * @param rotation    angular speed in rad/s
-     * @param fieldRelative if true => field-oriented
-     * @param isOpenLoop   not used here
-     */
-    public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
-        // Convert to module states
-        SwerveModuleState[] swerveModuleStates =
-            Constants.Swerve.swerveKinematics.toSwerveModuleStates(
-                fieldRelative
-                    ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                          translation.getX(),
-                          translation.getY(),
-                          rotation,
-                          getGyroYaw()
-                      )
-                    : new ChassisSpeeds(
-                          translation.getX(),
-                          translation.getY(),
-                          rotation
-                      )
-            );
-
-        // Because you're open loop, you can still use desaturateWheelSpeeds to limit speeds
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
-
-        // Command each module
-        for (int i = 0; i < mSwerveMods.length; i++) {
-            mSwerveMods[i].setDesiredState(swerveModuleStates[i]);
-        }
-    }
-
-    /**
-     * Basic gyro reading: returns heading in standard WPILib CCW-positive format.
-     */
-    public Rotation2d getGyroYaw() {
-        // Negate the navX yaw to match standard CCW-positive in WPILib
-        return Rotation2d.fromDegrees(-gyro.getYaw());
-    }
-
-    /**
-     * Zero the heading
-     */
     public void zeroHeading() {
         gyro.reset();
     }
 
-    @Override
-    public void periodic() {
-        // Update odometry with the gyro heading + each module's distance/angle
-        SwerveModulePosition[] modulePositions = new SwerveModulePosition[mSwerveMods.length];
-        for (int i = 0; i < mSwerveMods.length; i++) {
-            modulePositions[i] = mSwerveMods[i].getModulePosition();
-        }
-        swerveOdometry.update(getGyroYaw(), modulePositions);
-
-        // Log to SmartDashboard
-        SmartDashboard.putNumber("Gyro Yaw", gyro.getYaw());
-        SmartDashboard.putString("Odometry Pose", swerveOdometry.getPoseMeters().toString());
-
-        for (int i = 0; i < mSwerveMods.length; i++) {
-            double canCoderAngle = mSwerveMods[i].getCanCoderAngle();
-            SmartDashboard.putNumber("Module " + i + " CANCoder Angle", canCoderAngle);
-            System.out.println("Module " + i + " CANCoder Angle: " + canCoderAngle);
-        }
+    public double getHeading() {
+        return Math.IEEEremainder(gyro.getAngle(), 360);
     }
 
-    /**
-     * Returns the current estimated pose of the robot on the field (meters).
-     */
-    public Pose2d getPose() {
-        return swerveOdometry.getPoseMeters();
+    public Rotation2d getRotation2d(){
+        return Rotation2d.fromDegrees(getHeading());
     }
 
-    /**
-     * Reset odometry to the specified pose.
-     */
-    public void resetOdometry(Pose2d pose) {
-        // Also re-sample current module distances to keep everything in sync
-        SwerveModulePosition[] modulePositions = new SwerveModulePosition[mSwerveMods.length];
-        for (int i = 0; i < mSwerveMods.length; i++) {
-            modulePositions[i] = mSwerveMods[i].getModulePosition();
-        }
-        swerveOdometry.resetPosition(getGyroYaw(), modulePositions, pose);
+    public void stopModules(){
+        frontLeft.stop();
+        frontRight.stop();
+        backLeft.stop();
+        backRight.stop();
+    }
+
+    public void setModuleStates(SwerveModuleState[] desiredStates){
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);
+        frontLeft.setDesiredState(desiredStates[0]);
+        frontRight.setDesiredState(desiredStates[1]);
+        backLeft.setDesiredState(desiredStates[2]);
+        backRight.setDesiredState(desiredStates[3]);
     }
 }
