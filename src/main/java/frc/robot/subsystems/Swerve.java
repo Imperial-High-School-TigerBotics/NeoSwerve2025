@@ -77,10 +77,16 @@ public class Swerve extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        SmartDashboard.putNumber("Front Left Encoder", frontLeft.getAbsoluteEncoderPosition());
-        SmartDashboard.putNumber("Front Right Encoder", frontRight.getAbsoluteEncoderPosition());
-        SmartDashboard.putNumber("Back Left Encoder", backLeft.getAbsoluteEncoderPosition());
-        SmartDashboard.putNumber("Back Right Encoder", backRight.getAbsoluteEncoderPosition());
+        SmartDashboard.putNumber("Front Left Encoder with Offset", frontLeft.getAbsoluteEncoderPosition());
+        SmartDashboard.putNumber("Front Right Encoder with Offset", frontRight.getAbsoluteEncoderPosition());
+        SmartDashboard.putNumber("Back Left Encoder with Offset", backLeft.getAbsoluteEncoderPosition());
+        SmartDashboard.putNumber("Back Right Encoder with Offset", backRight.getAbsoluteEncoderPosition());
+
+
+        SmartDashboard.putNumber("Front Left Raw Absolute Encoder", frontLeft.rawAbsoluteEncoder());
+        SmartDashboard.putNumber("Front Right Raw Absolute Encoder", frontRight.rawAbsoluteEncoder());
+        SmartDashboard.putNumber("Back Left Raw Absolute Encoder", backLeft.rawAbsoluteEncoder());
+        SmartDashboard.putNumber("Back Right Raw Absolute Encoder", backRight.rawAbsoluteEncoder());
 
     }
 }

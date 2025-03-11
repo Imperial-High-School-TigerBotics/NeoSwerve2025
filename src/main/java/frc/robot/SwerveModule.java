@@ -74,6 +74,10 @@ public class SwerveModule{
         return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getTurningPosition()));
     }
 
+    public double rawAbsoluteEncoder(){
+        return swerveAbsoluteEncoder.getPosition().getValueAsDouble();
+    }
+
     public void setDesiredState(SwerveModuleState desiredState){
 
         if(Math.abs(desiredState.speedMetersPerSecond) < 0.001){
