@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 
 public class SwerveModule{
@@ -60,7 +61,7 @@ public class SwerveModule{
 
     public double getAbsoluteEncoderPosition(){
 
-        double pos = swerveAbsoluteEncoder.getPosition().getValueAsDouble() - absoluteEncoderOffset;
+        double pos = swerveAbsoluteEncoder.getAbsolutePosition().getValueAsDouble() - absoluteEncoderOffset;
 
         return Math.IEEEremainder(pos, 360);
     }
@@ -75,7 +76,7 @@ public class SwerveModule{
     }
 
     public double rawAbsoluteEncoder(){
-        return swerveAbsoluteEncoder.getPosition().getValueAsDouble();
+        return swerveAbsoluteEncoder.getAbsolutePosition().getValueAsDouble();
     }
 
     public void setDesiredState(SwerveModuleState desiredState){
