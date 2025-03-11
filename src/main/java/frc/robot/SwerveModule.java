@@ -71,7 +71,10 @@ public class SwerveModule{
     }
 
     public double getAbsoluteEncoderPosition(){
-        return swerveAbsoluteEncoder.getPosition().getValueAsDouble() - absoluteEncoderOffset;
+
+        double pos = swerveAbsoluteEncoder.getPosition().getValueAsDouble() - absoluteEncoderOffset;
+
+        return Math.IEEEremainder(pos, 360);
     }
 
     public void resetEncoders(){
