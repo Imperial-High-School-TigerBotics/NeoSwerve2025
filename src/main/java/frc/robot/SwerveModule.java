@@ -170,6 +170,6 @@ public class SwerveModule {
      * For debugging: return the raw absolute angle from the CANCoder
      */
     public double getCanCoderAngle() {
-        return angleCANCoder.getPosition().getValueAsDouble() * 360;
+        return angleCANCoder.getAbsolutePosition().getValueAsDouble() * 360;
     }
 }
