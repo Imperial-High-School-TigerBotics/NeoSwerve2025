@@ -34,9 +34,9 @@ public class TeleopSwerve extends Command{
         double ySpeed = ySpdFunction.get();
         double rot = rotFunction.get();
 
-        xSpeed = Math.abs(xSpeed) < Constants.stickDeadband ? xSpeed : 0.0;
-        ySpeed = Math.abs(ySpeed) < Constants.stickDeadband ? ySpeed : 0.0;
-        rot = Math.abs(rot) < Constants.stickDeadband ? rot : 0.0;
+        xSpeed = Math.abs(xSpeed) > Constants.stickDeadband ? xSpeed : 0.0;
+        ySpeed = Math.abs(ySpeed) > Constants.stickDeadband ? ySpeed : 0.0;
+        rot = Math.abs(rot) > Constants.stickDeadband ? rot : 0.0;
 
         xSpeed = xLimiter.calculate(xSpeed) * Constants.Swerve.maxSpeed * Constants.Swerve.maxSpeedPercentScalar;
         ySpeed = yLimiter.calculate(ySpeed) * Constants.Swerve.maxSpeed * Constants.Swerve.maxSpeedPercentScalar;
