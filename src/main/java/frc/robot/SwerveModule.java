@@ -140,7 +140,7 @@ public class SwerveModule {
      * Returns the current steering angle (post-offset), in degrees from -180..180.
      */
     private double getCurrentAngleDegrees() {
-        double rawAbsAngle = angleCANCoder.getPosition().getValueAsDouble(); // [0..360)
+        double rawAbsAngle = angleCANCoder.getAbsolutePosition().getValueAsDouble() * 360; // [0..360)
         double adjusted = rawAbsAngle - angleOffset.getDegrees();
         return wrapAngleDeg(adjusted);
     }
@@ -170,6 +170,6 @@ public class SwerveModule {
      * For debugging: return the raw absolute angle from the CANCoder
      */
     public double getCanCoderAngle() {
-        return angleCANCoder.getPosition().getValueAsDouble();
+        return angleCANCoder.getPosition().getValueAsDouble() * 360;
     }
 }
