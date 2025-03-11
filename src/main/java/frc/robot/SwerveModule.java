@@ -24,11 +24,6 @@ public class SwerveModule{
     private final CANcoder swerveAbsoluteEncoder;
     private final double absoluteEncoderOffset;
 
-    private final double driveRot2Meters;
-    private final double driveRPM2MpS;
-
-    private final double angleRot2Meters;
-    private final double angleRPM2MpS;
 
     public SwerveModule(int driveMotorID, int angleMotorID, int swerveAbsoluteEncoderID, Rotation2d absoluteEncoderOffset){
         this.absoluteEncoderOffset = absoluteEncoderOffset.getDegrees();
@@ -39,14 +34,7 @@ public class SwerveModule{
 
         driveEncoder = driveMotor.getEncoder();
         angleEncoder = angleMotor.getEncoder();
-
-        driveRot2Meters = driveEncoder.getPosition() * Constants.Swerve.drivePositionFactor;
-        driveRPM2MpS = driveEncoder.getVelocity() * Constants.Swerve.driveVelocityFactor;
-
-        angleRot2Meters = angleEncoder.getPosition() * (2 * Math.PI);
-        angleRPM2MpS = angleEncoder.getVelocity() * (2 * Math.PI / 60.0);
         
-
         turningPIDController = new PIDController(Constants.Swerve.angleKP, Constants.Swerve.angleKI, Constants.Swerve.angleKD);
         turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -55,19 +43,19 @@ public class SwerveModule{
     }
 
     public double getDrivePosition(){
-        return driveEncoder.getPosition() * driveRot2Meters;
+        return driveEncoder.getPosition() * Constants.Swerve.drivePositionFactor;
     }
-
+    
     public double getTurningPosition(){
-        return angleEncoder.getPosition() * angleRot2Meters;
+        return angleEncoder.getPosition() * (2 * Math.PI);
     }
-
+    
     public double getDriveVelocity(){
-        return driveEncoder.getVelocity() * driveRPM2MpS;
+        return driveEncoder.getVelocity() * Constants.Swerve.driveVelocityFactor;
     }
-
+    
     public double getTurningVelocity(){
-        return angleEncoder.getVelocity() * angleRPM2MpS;
+        return angleEncoder.getVelocity() * (2 * Math.PI / 60.0);
     }
 
     public double getAbsoluteEncoderPosition(){
