@@ -20,17 +20,12 @@ public final class Constants {
             new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0)
         );
 
-        //Physical Maximums
-        public static final double maxSpeed           = 3.8; // m/s | Capable of going higher, I believe        // m/s
-        public static final double maxAcceleration    = 3.0;         // m/s^2
+        // Drive open-loop max speed
+        public static final double maxSpeed           = 3.8;         // m/s
         public static final double maxAngularVelocity = 2 * Math.PI; // rad/s
 
-        // Percent of max speed to use for driving and turning
-        public static final double maxSpeedPercentScalar = 0.75;
-        public static final double maxAngularVelocityPercentScalar = 0.75;
-
         // Angle PID Gains
-        public static final double angleKP = 0.5;
+        public static final double angleKP = 0.01;
         public static final double angleKI = 0.0;
         public static final double angleKD = 0.0;
 

@@ -35,9 +35,9 @@ public class RobotContainer {
             new TeleopSwerve(
                 s_Swerve,
                 () -> -driver.getRawAxis(translationAxis),
-                () -> driver.getRawAxis(strafeAxis),
-                () -> driver.getRawAxis(rotationAxis),
-                () -> true // true for field oriented, false for robot oriented
+                () -> -driver.getRawAxis(strafeAxis),
+                () -> -driver.getRawAxis(rotationAxis),
+                () -> false
             )
         );
 
@@ -46,7 +46,7 @@ public class RobotContainer {
     }
 
     private void configureButtonBindings() {
-        // Zero gyro on A (Resetting the heading)
+        // Zero gyro on A
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
     }
 
