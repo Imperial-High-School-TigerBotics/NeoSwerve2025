@@ -1,55 +1,69 @@
 package frc.robot.commands;
 
+import java.util.function.Supplier;
+
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.Swerve;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
+public class TeleopSwerve extends Command{
+    private final Swerve swerve;
+    private final Supplier<Double> xSpdFunction, ySpdFunction, rotFunction;
+    private final Supplier<Boolean> fieldOrientedFunction;
+    private final SlewRateLimiter xLimiter, yLimiter, rotLimiter;
+    
+    public TeleopSwerve(Swerve swerve, Supplier<Double> xSpdFunction, Supplier<Double> ySpdFunction,
+    Supplier<Double> rotFunction, Supplier<Boolean> fieldOrientedFunction){
+        this.swerve = swerve;
+        this.xSpdFunction = xSpdFunction;
+        this.ySpdFunction = ySpdFunction;
+        this.rotFunction = rotFunction;
+        this.fieldOrientedFunction = fieldOrientedFunction;
+        this.xLimiter = new SlewRateLimiter(Constants.Swerve.maxAcceleration);
+        this.yLimiter = new SlewRateLimiter(Constants.Swerve.maxAcceleration);
+        this.rotLimiter = new SlewRateLimiter(Constants.Swerve.maxAngularVelocity);
+        addRequirements(swerve);
+    }
+    @Override
+    public void execute(){
+        double xSpeed = xSpdFunction.get();
+        double ySpeed = ySpdFunction.get();
+        double rot = rotFunction.get();
 
-public class TeleopSwerve extends Command {
-    private final Swerve s_Swerve;
-    private final DoubleSupplier translationSup;
-    private final DoubleSupplier strafeSup;
-    private final DoubleSupplier rotationSup;
-    private final BooleanSupplier robotCentricSup;
+        xSpeed = Math.abs(xSpeed) > Constants.stickDeadband ? xSpeed : 0.0;
+        ySpeed = Math.abs(ySpeed) > Constants.stickDeadband ? ySpeed : 0.0;
+        rot = Math.abs(rot) > Constants.stickDeadband ? rot : 0.0;
 
-    public TeleopSwerve(
-        Swerve s_Swerve,
-        DoubleSupplier translationSup,
-        DoubleSupplier strafeSup,
-        DoubleSupplier rotationSup,
-        BooleanSupplier robotCentricSup
-    ) {
-        this.s_Swerve = s_Swerve;
-        addRequirements(s_Swerve);
+        xSpeed = xLimiter.calculate(xSpeed) * Constants.Swerve.maxSpeed * Constants.Swerve.maxSpeedPercentScalar;
+        ySpeed = yLimiter.calculate(ySpeed) * Constants.Swerve.maxSpeed * Constants.Swerve.maxSpeedPercentScalar;
+        rot = rotLimiter.calculate(rot) * Constants.Swerve.maxAngularVelocity * Constants.Swerve.maxAngularVelocityPercentScalar;
 
-        this.translationSup = translationSup;
-        this.strafeSup = strafeSup;
-        this.rotationSup = rotationSup;
-        this.robotCentricSup = robotCentricSup;
+        ChassisSpeeds chassisSpeeds;
+        if(fieldOrientedFunction.get()){
+            //Relative to the field
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, 
+            rot, swerve.getRotation2d());
+        } else {
+            // Relative to the robot
+            chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, rot);
+        }
+
+        SwerveModuleState[] moduleStates = Constants.Swerve.swerveKinematics.toSwerveModuleStates(chassisSpeeds);
+
+        swerve.setModuleStates(moduleStates);
     }
 
     @Override
-    public void execute() {
-        // Just for debugging
-        SmartDashboard.putNumber("Gyro Yaw in Teleop", s_Swerve.getGyroYaw().getDegrees());
+    public void end(boolean interrupted){
+        swerve.stopModules();
+    }
 
-        // Deadband
-        double translationVal = MathUtil.applyDeadband(translationSup.getAsDouble(), Constants.stickDeadband);
-        double strafeVal      = MathUtil.applyDeadband(strafeSup.getAsDouble(), Constants.stickDeadband);
-        double rotationVal    = MathUtil.applyDeadband(rotationSup.getAsDouble(), Constants.stickDeadband);
-
-        // Convert to m/s and rad/s (for the WPILib kinematics, if you still want them)
-        Translation2d translation = new Translation2d(translationVal, strafeVal)
-                                        .times(Constants.Swerve.maxSpeed);
-        double rot = rotationVal * Constants.Swerve.maxAngularVelocity;
-
-        // Drive
-        s_Swerve.drive(translation, rot, !robotCentricSup.getAsBoolean(), true);
+    @Override
+    public boolean isFinished(){
+        return false;
     }
 }
