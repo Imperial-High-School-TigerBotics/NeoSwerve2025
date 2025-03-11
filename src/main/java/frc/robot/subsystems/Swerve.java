@@ -5,6 +5,7 @@ import frc.robot.SwerveModule;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.studica.frc.AHRS;
@@ -71,5 +72,19 @@ public class Swerve extends SubsystemBase {
         frontRight.setDesiredState(desiredStates[1]);
         backLeft.setDesiredState(desiredStates[2]);
         backRight.setDesiredState(desiredStates[3]);
+    }
+
+    @Override
+    public void periodic() {
+        // This method will be called once per scheduler run
+        SmartDashboard.putNumber("Front Left Raw Absolute Encoder Position", frontLeft.getRawAbsoluteEncoderPosition());
+        SmartDashboard.putNumber("Front Right Raw Absolute Encoder Position", frontRight.getRawAbsoluteEncoderPosition());
+        SmartDashboard.putNumber("Back Left Raw Absolute Encoder Position", backLeft.getRawAbsoluteEncoderPosition());
+        SmartDashboard.putNumber("Back Right Raw Absolute Encoder Position", backRight.getRawAbsoluteEncoderPosition());
+
+        SmartDashboard.putNumber("Front Left Adjusted Absolute Encoder Position", frontLeft.getAbsoluteEncoderPosition());
+        SmartDashboard.putNumber("Front Right Adjusted Absolute Encoder Position", frontRight.getAbsoluteEncoderPosition());
+        SmartDashboard.putNumber("Back Left Adjusted Absolute Encoder Position", backLeft.getAbsoluteEncoderPosition());
+        SmartDashboard.putNumber("Back Right Adjusted Absolute Encoder Position", backRight.getAbsoluteEncoderPosition());
     }
 }
