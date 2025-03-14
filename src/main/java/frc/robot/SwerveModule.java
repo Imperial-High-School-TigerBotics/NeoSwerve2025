@@ -4,6 +4,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -58,7 +59,7 @@ public class SwerveModule{
     }
 
     public double getAbsoluteEncoderPosition(){
-        return getRawAbsoluteEncoderPosition() - absoluteEncoderOffset;
+        return Math.toRadians(getRawAbsoluteEncoderPosition() - absoluteEncoderOffset);
     }
 
     public double getRawAbsoluteEncoderPosition(){
@@ -82,9 +83,13 @@ public class SwerveModule{
         }
         desiredState = SwerveModuleState.optimize(desiredState, getState().angle);
         driveMotor.set(desiredState.speedMetersPerSecond / Constants.Swerve.maxSpeed);
-        angleMotor.set(turningPIDController.calculate(getTurningPosition(), desiredState.angle.getRadians()));
+
+        double pidOutput = turningPIDController.calculate(getTurningPosition(), desiredState.angle.getRadians());
+        pidOutput = MathUtil.clamp(pidOutput, -1.0, 1.0);
+        angleMotor.set(pidOutput);
 
         SmartDashboard.putString("Swerve[" + swerveAbsoluteEncoder.getDeviceID() + "] desired state: ", desiredState.toString());
+        SmartDashboard.putNumber("Swerve[" + swerveAbsoluteEncoder.getDeviceID() + "] PID Output", pidOutput);
     }
 
     public void stop(){

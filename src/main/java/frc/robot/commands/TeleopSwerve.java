@@ -38,9 +38,9 @@ public class TeleopSwerve extends Command{
         ySpeed = Math.abs(ySpeed) > Constants.stickDeadband ? ySpeed : 0.0;
         rot = Math.abs(rot) > Constants.stickDeadband ? rot : 0.0;
 
-        xSpeed = xLimiter.calculate(xSpeed) * Constants.Swerve.maxSpeed * Constants.Swerve.maxSpeedPercentScalar;
-        ySpeed = yLimiter.calculate(ySpeed) * Constants.Swerve.maxSpeed * Constants.Swerve.maxSpeedPercentScalar;
-        rot = rotLimiter.calculate(rot) * Constants.Swerve.maxAngularVelocity * Constants.Swerve.maxAngularVelocityPercentScalar;
+        xSpeed = xSpeed * Constants.Swerve.maxSpeed;
+        ySpeed = ySpeed * Constants.Swerve.maxSpeed;
+        rot = rot * Constants.Swerve.maxAngularVelocity;
 
         ChassisSpeeds chassisSpeeds;
         if(fieldOrientedFunction.get()){
