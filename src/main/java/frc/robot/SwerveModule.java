@@ -25,7 +25,7 @@ public class SwerveModule{
     private final CANcoder swerveAbsoluteEncoder;
     private final double absoluteEncoderOffset;
 
-    public SwerveModule(int driveMotorID, int angleMotorID, int swerveAbsoluteEncoderID, Rotation2d absoluteEncoderOffset){
+    public SwerveModule(int driveMotorID, int angleMotorID, int swerveAbsoluteEncoderID, Rotation2d absoluteEncoderOffset, double kP, double kI, double kD){
         this.absoluteEncoderOffset = absoluteEncoderOffset.getDegrees();
         swerveAbsoluteEncoder = new CANcoder(swerveAbsoluteEncoderID);
 
@@ -35,7 +35,7 @@ public class SwerveModule{
         driveEncoder = driveMotor.getEncoder();
         angleEncoder = angleMotor.getEncoder();
 
-        turningPIDController = new PIDController(Constants.Swerve.angleKP, Constants.Swerve.angleKI, Constants.Swerve.angleKD);
+        turningPIDController = new PIDController(kP, kI, kD);
         turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
         resetEncoders();
@@ -58,12 +58,22 @@ public class SwerveModule{
         return angleEncoder.getVelocity() * (2 * Math.PI / 60.0);
     }
 
-    public double getAbsoluteEncoderPosition(){
-        return Math.toRadians(getRawAbsoluteEncoderPosition() - absoluteEncoderOffset);
+    public double getRawAbsoluteEncoderPosition() {
+        double rawDegrees = swerveAbsoluteEncoder.getAbsolutePosition().getValueAsDouble() * 360;
+    
+        // Convert 0° to 180° into -180° to 180° range
+        if (rawDegrees > 180) {
+            rawDegrees -= 360;  // Shift values down if they exceed 180
+        }
+    
+        return Math.toRadians(rawDegrees); // Convert degrees to radians
     }
-
-    public double getRawAbsoluteEncoderPosition(){
-        return swerveAbsoluteEncoder.getAbsolutePosition().getValueAsDouble() * 360;
+    
+    public double getAbsoluteEncoderPosition() {
+        double angle = getRawAbsoluteEncoderPosition() - absoluteEncoderOffset;
+        
+        // Normalize to range [-π, π]
+        return MathUtil.angleModulus(angle);
     }
 
     public void resetEncoders(){

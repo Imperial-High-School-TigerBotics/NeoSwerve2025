@@ -17,28 +17,40 @@ public class Swerve extends SubsystemBase {
         Constants.Swerve.Mod0.driveMotorID,
         Constants.Swerve.Mod0.angleMotorID,
         Constants.Swerve.Mod0.canCoderID,
-        Constants.Swerve.Mod0.angleOffset
+        Constants.Swerve.Mod0.angleOffset,
+        Constants.Swerve.Mod0.kP,
+        Constants.Swerve.Mod0.kI,
+        Constants.Swerve.Mod0.kD
     );
 
     private final SwerveModule frontRight = new SwerveModule(
         Constants.Swerve.Mod1.driveMotorID,
         Constants.Swerve.Mod1.angleMotorID,
         Constants.Swerve.Mod1.canCoderID,
-        Constants.Swerve.Mod1.angleOffset
+        Constants.Swerve.Mod1.angleOffset,
+        Constants.Swerve.Mod1.kP,
+        Constants.Swerve.Mod1.kI,
+        Constants.Swerve.Mod1.kD
     );
 
     private final SwerveModule backLeft = new SwerveModule(
         Constants.Swerve.Mod2.driveMotorID,
         Constants.Swerve.Mod2.angleMotorID,
         Constants.Swerve.Mod2.canCoderID,
-        Constants.Swerve.Mod2.angleOffset
+        Constants.Swerve.Mod2.angleOffset,
+        Constants.Swerve.Mod2.kP,
+        Constants.Swerve.Mod2.kI,
+        Constants.Swerve.Mod2.kD
     );
 
     private final SwerveModule backRight = new SwerveModule(
         Constants.Swerve.Mod3.driveMotorID,
         Constants.Swerve.Mod3.angleMotorID,
         Constants.Swerve.Mod3.canCoderID,
-        Constants.Swerve.Mod3.angleOffset
+        Constants.Swerve.Mod3.angleOffset,
+        Constants.Swerve.Mod3.kP,
+        Constants.Swerve.Mod3.kI,
+        Constants.Swerve.Mod3.kD
     );
 
     private AHRS gyro = new AHRS(NavXComType.kMXP_SPI);

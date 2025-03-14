@@ -29,10 +29,6 @@ public final class Constants {
         public static final double maxSpeedPercentScalar = 0.75;
         public static final double maxAngularVelocityPercentScalar = 0.75;
 
-        // Angle PID Gains
-        public static final double angleKP = 0.5;
-        public static final double angleKI = 0.0;
-        public static final double angleKD = 0.0;
 
         // Example wheel and gear ratio constants for the drive encoder
         // *** Replace these with your actual sizes/ratios! ***
@@ -50,6 +46,9 @@ public final class Constants {
             public static final int angleMotorID = 3;
             public static final int canCoderID   = 21;
             public static final Rotation2d angleOffset  = Rotation2d.fromDegrees(75.234375);
+            public static final double kP = 0.1;
+            public static final double kI = 0.0;
+            public static final double kD = 0.0;
         }
 
         public static final class Mod1 { // Front Right
@@ -57,6 +56,9 @@ public final class Constants {
             public static final int angleMotorID = 6;
             public static final int canCoderID   = 22;
             public static final Rotation2d angleOffset  = Rotation2d.fromDegrees(11.513672);
+            public static final double kP = 0.1;
+            public static final double kI = 0.0;
+            public static final double kD = 0.0;
         }
 
         public static final class Mod2 { // Back Left
@@ -64,6 +66,9 @@ public final class Constants {
             public static final int angleMotorID = 9;
             public static final int canCoderID   = 23;
             public static final Rotation2d angleOffset  = Rotation2d.fromDegrees(108.193359);
+            public static final double kP = 0.1;
+            public static final double kI = 0.0;
+            public static final double kD = 0.0;
         }
 
         public static final class Mod3 { // Back Right
@@ -71,6 +76,9 @@ public final class Constants {
             public static final int angleMotorID = 12;
             public static final int canCoderID   = 24;
             public static final Rotation2d angleOffset  = Rotation2d.fromDegrees(-58.710938);
+            public static final double kP = 0.1;
+            public static final double kI = 0.0;
+            public static final double kD = 0.0;
         }
     }
 }
