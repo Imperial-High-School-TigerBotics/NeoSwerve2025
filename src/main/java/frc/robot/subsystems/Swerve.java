@@ -86,5 +86,11 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Front Right Adjusted Absolute Encoder Position", frontRight.getAbsoluteEncoderPosition());
         SmartDashboard.putNumber("Back Left Adjusted Absolute Encoder Position", backLeft.getAbsoluteEncoderPosition());
         SmartDashboard.putNumber("Back Right Adjusted Absolute Encoder Position", backRight.getAbsoluteEncoderPosition());
+
+        SmartDashboard.putNumber("Navx Yaw Raw", gyro.getYaw());
+        SmartDashboard.putNumber("NavX Pitch Raw", gyro.getPitch());
+        SmartDashboard.putNumber("NavX Roll Raw", gyro.getRoll());
+
+        SmartDashboard.putNumber("Robot Heading", getHeading());
     }
 }
