@@ -44,11 +44,13 @@ public class Swerve extends SubsystemBase {
     private AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
 
     public Swerve() {
-        try{
-            Thread.sleep(1000);
-        } catch (Exception e){
-        }
-        zeroHeading();
+        new Thread(()->{
+            try{
+                Thread.sleep(1000);
+                zeroHeading();
+            } catch (Exception e){
+            }
+        }).start();
     }
 
     public void zeroHeading() {
