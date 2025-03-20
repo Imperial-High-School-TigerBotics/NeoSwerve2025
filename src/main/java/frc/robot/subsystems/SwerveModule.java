@@ -17,10 +17,11 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
 
-public class SwerveModule {
+public class SwerveModule extends SubsystemBase{
 
     private final SparkMax driveMotor;
     private final SparkMax turningMotor;
@@ -142,14 +143,25 @@ public class SwerveModule {
             stop();
             return;
         }
-        state = SwerveModuleState.optimize(state, getState().angle);
+        state.optimize(getState().angle);
         driveMotor.set(state.speedMetersPerSecond / DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
         turningMotor.set(turningPidController.calculate(getTurningPosition(), state.angle.getRadians()));
-        SmartDashboard.putString("Swerve[" + absoluteEncoder.getDeviceID() + "] state", state.toString());
+        SmartDashboard.putString("Swerve[" + absoluteEncoder.getDeviceID() + "] desired state: ", state.toString());
+        SmartDashboard.putNumber("Swerve[" + absoluteEncoder.getDeviceID() + "] PID Output", turningPidController.calculate(getTurningPosition(), state.angle.getRadians()));
     }
 
     public void stop() {
         driveMotor.set(0);
         turningMotor.set(0);
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("Module[ " + absoluteEncoder.getDeviceID() + "] Drive Position", getDrivePosition());
+        SmartDashboard.putNumber("Module[ " + absoluteEncoder.getDeviceID() + "] Turning Position", getTurningPosition());
+        SmartDashboard.putNumber("Module[ " + absoluteEncoder.getDeviceID() + "] Drive Velocity", getDriveVelocity());
+        SmartDashboard.putNumber("Module[ " + absoluteEncoder.getDeviceID() + "] Turning Velocity", getTurningVelocity());
+        SmartDashboard.putNumber("Module[ " + absoluteEncoder.getDeviceID() + "] Absolute Encoder", getEncoderAbsolutePosition());
+        SmartDashboard.putNumber("Module[ " + absoluteEncoder.getDeviceID() + "] Absolute Encoder Deg", getAbsoluteEncoderDeg());
     }
 }
