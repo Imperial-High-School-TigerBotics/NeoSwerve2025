@@ -7,7 +7,7 @@ import edu.wpi.first.math.util.Units;
 
 public final class Constants {
     public static final class SpeedScaleFactors{
-        public static final double SwerveMaxSpeed = 0.35; //Speed in percentage
+        public static final double SwerveMaxSpeed = 0.75; //Speed in percentage
     }
 
     public static final class ModuleConstants {
@@ -33,7 +33,7 @@ public final class Constants {
                 new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
                 new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
-        public static final int kFrontLeftDriveMotorPort = 4; //Make sure motor ports match with robot (CAN)
+        public static final int kFrontLeftDriveMotorPort = 4;
         public static final int kBackLeftDriveMotorPort = 2;
         public static final int kFrontRightDriveMotorPort = 6;
         public static final int kBackRightDriveMotorPort = 8;
@@ -53,7 +53,7 @@ public final class Constants {
         public static final boolean kFrontRightDriveEncoderReversed = false;
         public static final boolean kBackRightDriveEncoderReversed = false;
 
-        public static final int kFrontLeftDriveAbsoluteEncoderPort = 11; //Make sure encoder ports match with robot (CAN)
+        public static final int kFrontLeftDriveAbsoluteEncoderPort = 11;
         public static final int kBackLeftDriveAbsoluteEncoderPort = 12;
         public static final int kFrontRightDriveAbsoluteEncoderPort = 10;
         public static final int kBackRightDriveAbsoluteEncoderPort = 9;
@@ -63,13 +63,13 @@ public final class Constants {
         public static final boolean kFrontRightDriveAbsoluteEncoderReversed = false;
         public static final boolean kBackRightDriveAbsoluteEncoderReversed = false;
 
-        public static final double kFrontLeftDriveAbsoluteEncoderOffsetDeg = 127.353516;//11
-        public static final double kBackLeftDriveAbsoluteEncoderOffsetDeg = 270.087891;//10
-        public static final double kFrontRightDriveAbsoluteEncoderOffsetDeg = 273.603516;//12
-        public static final double kBackRightDriveAbsoluteEncoderOffsetDeg = 125.595703;//9
+        public static final double kFrontLeftDriveAbsoluteEncoderOffsetDeg = 127.353516;
+        public static final double kBackLeftDriveAbsoluteEncoderOffsetDeg = 270.087891;
+        public static final double kFrontRightDriveAbsoluteEncoderOffsetDeg = 273.603516;
+        public static final double kBackRightDriveAbsoluteEncoderOffsetDeg = 125.595703;
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = 4.4; // Original: 5
-        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI; // Original: 2 * 2 * Math.PI
+        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI;
 
         public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond * SpeedScaleFactors.SwerveMaxSpeed;// / 4;
         public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = //
