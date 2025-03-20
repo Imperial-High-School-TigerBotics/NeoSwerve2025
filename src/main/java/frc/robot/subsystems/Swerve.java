@@ -1,114 +1,97 @@
 package frc.robot.subsystems;
 
-import frc.robot.Constants;
 import frc.robot.SwerveModule;
-import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.Constants;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
+
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import com.studica.frc.AHRS;
-import com.studica.frc.AHRS.NavXComType;
-
-
 public class Swerve extends SubsystemBase {
-    private final SwerveModule frontLeft = new SwerveModule(
-        Constants.Swerve.Mod0.driveMotorID,
-        Constants.Swerve.Mod0.angleMotorID,
-        Constants.Swerve.Mod0.canCoderID,
-        Constants.Swerve.Mod0.angleOffset,
-        Constants.Swerve.Mod0.kP,
-        Constants.Swerve.Mod0.kI,
-        Constants.Swerve.Mod0.kD
-    );
-
-    private final SwerveModule frontRight = new SwerveModule(
-        Constants.Swerve.Mod1.driveMotorID,
-        Constants.Swerve.Mod1.angleMotorID,
-        Constants.Swerve.Mod1.canCoderID,
-        Constants.Swerve.Mod1.angleOffset,
-        Constants.Swerve.Mod1.kP,
-        Constants.Swerve.Mod1.kI,
-        Constants.Swerve.Mod1.kD
-    );
-
-    private final SwerveModule backLeft = new SwerveModule(
-        Constants.Swerve.Mod2.driveMotorID,
-        Constants.Swerve.Mod2.angleMotorID,
-        Constants.Swerve.Mod2.canCoderID,
-        Constants.Swerve.Mod2.angleOffset,
-        Constants.Swerve.Mod2.kP,
-        Constants.Swerve.Mod2.kI,
-        Constants.Swerve.Mod2.kD
-    );
-
-    private final SwerveModule backRight = new SwerveModule(
-        Constants.Swerve.Mod3.driveMotorID,
-        Constants.Swerve.Mod3.angleMotorID,
-        Constants.Swerve.Mod3.canCoderID,
-        Constants.Swerve.Mod3.angleOffset,
-        Constants.Swerve.Mod3.kP,
-        Constants.Swerve.Mod3.kI,
-        Constants.Swerve.Mod3.kD
-    );
-
-    private AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
+    public SwerveDriveOdometry swerveOdometry;
+    public SwerveModule[] mSwerveMods;
+    public AHRS gyro;
+    public boolean autonMovingEnabled;
 
     public Swerve() {
-        new Thread(()->{
-            try{
-                Thread.sleep(1000);
-                zeroHeading();
-            } catch (Exception e){
-            }
-        }).start();
+        gyro = new AHRS(NavXComType.kMXP_SPI);
+        gyro.reset();
+        
+        mSwerveMods = new SwerveModule[] {
+            new SwerveModule(0),
+            new SwerveModule(1),
+            new SwerveModule(2),
+            new SwerveModule(3)
+        };
+        
+        swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getGyroYaw(), getModulePositions());
+        autonMovingEnabled = true;
+    }
+    
+    public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
+        SwerveModuleState[] swerveModuleStates = Constants.Swerve.swerveKinematics.toSwerveModuleStates(
+            fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                translation.getX(), 
+                translation.getY(), 
+                rotation, 
+                getGyroYaw()
+            ) : new ChassisSpeeds(
+                translation.getX(), 
+                translation.getY(), 
+                rotation
+            )
+        );
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
+
+        for (SwerveModule mod : mSwerveMods) {
+            mod.setDesiredState(swerveModuleStates[mod.moduleNumber]);
+        }
+    }
+
+    public SwerveModuleState[] getModuleStates() {
+        SwerveModuleState[] states = new SwerveModuleState[4];
+        for (SwerveModule mod : mSwerveMods) {
+            states[mod.moduleNumber] = mod.getState();
+        }
+        return states;
+    }
+
+    public SwerveModulePosition[] getModulePositions() {
+        SwerveModulePosition[] positions = new SwerveModulePosition[4];
+        for (SwerveModule mod : mSwerveMods) {
+            positions[mod.moduleNumber] = mod.getPosition();
+        }
+        return positions;
+    }
+
+    public Pose2d getPose() {
+        return swerveOdometry.getPoseMeters();
+    }
+
+    public void setPose(Pose2d pose) {
+        swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(), pose);
+    }
+
+    public Rotation2d getGyroYaw() {
+        return Rotation2d.fromDegrees(-gyro.getYaw()); // Negate to match WPILib convention
     }
 
     public void zeroHeading() {
         gyro.reset();
     }
 
-    public double getHeading() {
-        return Math.IEEEremainder(gyro.getAngle(), 360);
-    }
-
-    public Rotation2d getRotation2d(){
-        return Rotation2d.fromDegrees(getHeading());
-    }
-
-    public void stopModules(){
-        frontLeft.stop();
-        frontRight.stop();
-        backLeft.stop();
-        backRight.stop();
-    }
-
-    public void setModuleStates(SwerveModuleState[] desiredStates){
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);
-        frontLeft.setDesiredState(desiredStates[0]);
-        frontRight.setDesiredState(desiredStates[1]);
-        backLeft.setDesiredState(desiredStates[2]);
-        backRight.setDesiredState(desiredStates[3]);
-    }
-
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
-        SmartDashboard.putNumber("Front Left Raw Absolute Encoder Position", frontLeft.getRawAbsoluteEncoderPosition());
-        SmartDashboard.putNumber("Front Right Raw Absolute Encoder Position", frontRight.getRawAbsoluteEncoderPosition());
-        SmartDashboard.putNumber("Back Left Raw Absolute Encoder Position", backLeft.getRawAbsoluteEncoderPosition());
-        SmartDashboard.putNumber("Back Right Raw Absolute Encoder Position", backRight.getRawAbsoluteEncoderPosition());
-
-        SmartDashboard.putNumber("Front Left Adjusted Absolute Encoder Position", frontLeft.getAbsoluteEncoderPosition());
-        SmartDashboard.putNumber("Front Right Adjusted Absolute Encoder Position", frontRight.getAbsoluteEncoderPosition());
-        SmartDashboard.putNumber("Back Left Adjusted Absolute Encoder Position", backLeft.getAbsoluteEncoderPosition());
-        SmartDashboard.putNumber("Back Right Adjusted Absolute Encoder Position", backRight.getAbsoluteEncoderPosition());
-
-        SmartDashboard.putNumber("Navx Yaw Raw", gyro.getYaw());
-        SmartDashboard.putNumber("NavX Pitch Raw", gyro.getPitch());
-        SmartDashboard.putNumber("NavX Roll Raw", gyro.getRoll());
-
-        SmartDashboard.putNumber("Robot Heading", getHeading());
+        swerveOdometry.update(getGyroYaw(), getModulePositions());
+        SmartDashboard.putNumber("Gyro Yaw", gyro.getYaw());
     }
 }
